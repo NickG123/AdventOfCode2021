@@ -1,12 +1,32 @@
 """Parser for problem input files."""
 from __future__ import annotations
 
+import dataclasses
 import re
 from collections import Counter
+from enum import Enum
 from pathlib import Path
-from typing import Callable, Iterator, TypeVar
+from typing import Callable, Iterator, Type, TypeVar
 
 T = TypeVar("T")
+
+
+def parse_field(s: str, typ: Type[T]) -> T:
+    """Parse a string as the given type."""
+    if typ in {int, str}:
+        return typ(s)  # type: ignore
+    if issubclass(typ, Enum):
+        return typ[s]  # type: ignore
+    raise Exception(f"Unkown type {typ}")
+
+
+def parse_dataclass(data: list[str], clazz: Type[T]) -> T:
+    """Parse a list of data into the provided dataclass."""
+    assert len(data) == len(dataclasses.fields(clazz))
+    parsed = [
+        parse_field(d, field.type) for field, d in zip(dataclasses.fields(clazz), data)
+    ]
+    return clazz(*parsed)
 
 
 class Parser:
@@ -50,3 +70,11 @@ class Parser:
     def read_regex_groups(self, regex: re.Pattern[str]) -> Iterator[dict[str, str]]:
         """Run a regex on each line and return the groups.  Regex must match each line."""
         return (regex.groupdict() for regex in self.read_regex(regex))
+
+    def read_split(self, separator: str = " ") -> Iterator[list[str]]:
+        """Split each line by a separator."""
+        return self.read_something(lambda s: s.split(separator))
+
+    def read_dataclass(self, clazz: Type[T], separator: str = " ") -> Iterator[T]:
+        """Split the lines based on a separator and parse it into a dataclass."""
+        return (parse_dataclass(d, clazz) for d in self.read_split(separator))
