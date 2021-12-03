@@ -1,4 +1,4 @@
-"""Day 2."""
+"""Day 02."""
 
 from dataclasses import dataclass
 from enum import Enum
@@ -30,7 +30,7 @@ class Movement:
 
 
 def run(parser: Parser) -> Result:
-    """Solution for Day 2."""
+    """Solution for Day 02."""
     part1 = sum(
         (m.distance for m in parser.read_dataclass(Movement)),
         Point2D(0, 0),

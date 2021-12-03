@@ -1,4 +1,4 @@
-"""Day 1."""
+"""Day 01."""
 
 from itertools import islice, pairwise, tee
 
@@ -7,7 +7,7 @@ from result import Result
 
 
 def run(parser: Parser) -> Result:
-    """Solution for Day 1."""
+    """Solution for Day 01."""
     # Use pairwise to count the number of increases
     part1 = sum(b > a for a, b in pairwise(parser.read_ints()))
 

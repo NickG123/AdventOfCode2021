@@ -20,8 +20,9 @@ def cli() -> None:
 @click.argument("day")
 def bootstrap(day: int) -> None:
     """Initialize a new folder for a day using the template and download the input."""
-    cookiecutter("./template", extra_context={"day": day}, no_input=True)
-    with (Path(f"day{day}") / "input").open("wb") as fout:
+    day_str = str(day).zfill(2)
+    cookiecutter("./template", extra_context={"day": day_str}, no_input=True)
+    with (Path(f"day{day_str}") / "input").open("wb") as fout:
         download_problem_input(fout, YEAR, day)
 
 
@@ -30,12 +31,13 @@ def bootstrap(day: int) -> None:
 @click.option("-i", "--input-file", "input_file_name", default="input")
 def run(day: int, input_file_name: str) -> None:
     """Run the problem on the provided day."""
-    input_file = Path(f"day{day}") / input_file_name
+    day_str = str(day).zfill(2)
+    input_file = Path(f"day{day_str}") / input_file_name
     if input_file_name == "input" and not input_file.is_file():
         with input_file.open("wb") as fout:
-            download_problem_input(fout, YEAR, day)
+            download_problem_input(fout, YEAR, day_str)
 
-    module = importlib.import_module(f"day{day}.day{day}")
+    module = importlib.import_module(f"day{day_str}.day{day_str}")
     parser = Parser(input_file)
     result = module.run(parser)
     print(result)
