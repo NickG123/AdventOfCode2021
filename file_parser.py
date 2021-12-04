@@ -78,3 +78,14 @@ class Parser:
     def read_dataclass(self, clazz: Type[T], separator: str = " ") -> Iterator[T]:
         """Split the lines based on a separator and parse it into a dataclass."""
         return (parse_dataclass(d, clazz) for d in self.read_split(separator))
+
+    def read_groups(self) -> Iterator[list[str]]:
+        """Read lines a group at a time, separated by empty lines."""
+        lines = []
+        for line in self.read_lines():
+            if line:
+                lines.append(line)
+            else:
+                yield lines
+                lines = []
+        yield lines
