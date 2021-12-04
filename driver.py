@@ -1,5 +1,6 @@
 """The driver program that is the main entrypoint for the application."""
 import importlib
+from datetime import datetime
 from pathlib import Path
 
 import click
@@ -9,6 +10,7 @@ from driver_helpers.aoc_site import download_problem_input
 from file_parser import Parser
 
 YEAR = 2021
+CURR_DAY = datetime.now().day
 
 
 @click.group()
@@ -17,7 +19,7 @@ def cli() -> None:
 
 
 @cli.command()
-@click.argument("day")
+@click.argument("day", default=CURR_DAY)
 def bootstrap(day: int) -> None:
     """Initialize a new folder for a day using the template and download the input."""
     day_str = str(day).zfill(2)
@@ -27,7 +29,7 @@ def bootstrap(day: int) -> None:
 
 
 @cli.command()
-@click.argument("day")
+@click.argument("day", default=CURR_DAY)
 @click.option("-i", "--input-file", "input_file_name", default="input")
 def run(day: int, input_file_name: str) -> None:
     """Run the problem on the provided day."""
