@@ -1,8 +1,16 @@
 """Helper utilities related to geometry."""
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import Generic, Iterable, Optional, TypeVar
+from typing import Callable, Generic, Iterable, Optional, TypeVar
+
+
+def get_basis_vector(x: int) -> int:
+    """Get a basis vector from an int."""
+    if x == 0:
+        return 0
+    return -1 if x < 0 else 1
 
 
 @dataclass(frozen=True)
@@ -23,6 +31,28 @@ class Point2D:
     def __mul__(self, scalar: int) -> Point2D:
         """Multiplay this point by a scalar."""
         return Point2D(self.x * scalar, self.y * scalar)
+
+    def points_between(self, other: Point2D) -> Iterable[Point2D]:
+        """Get the points between this point and another point."""
+        y_vector = other.y - self.y
+        x_vector = other.x - self.x
+
+        if x_vector != 0 and y_vector != 0 and abs(x_vector) != abs(y_vector):
+            raise Exception(
+                "Tried to get points between two points that are not aligned."
+            )
+
+        return self.points_in_path(
+            Point2D(get_basis_vector(x_vector), get_basis_vector(y_vector)),
+            max(abs(x_vector), abs(y_vector)),
+        )
+
+    def points_in_path(
+        self, direction: Point2D, max_distance: int
+    ) -> Iterable[Point2D]:
+        """Get the points in a path starting with this point and heading in one direction for a distance."""
+        for distance in range(max_distance + 1):
+            yield self + direction * distance
 
 
 class Rect2D:
@@ -70,9 +100,11 @@ T = TypeVar("T")
 class Grid2D(Generic[T]):
     """A class to capture a 2d grid."""
 
-    def __init__(self, reverse_lookup: bool = False) -> None:
+    def __init__(
+        self, reverse_lookup: bool = False, default: Optional[Callable[[], T]] = None
+    ) -> None:
         """Initialize an empty grid."""
-        self.data: dict[Point2D, T] = {}
+        self.data: dict[Point2D, T] = {} if default is None else defaultdict(default)
         self.reverse_lookup = reverse_lookup
         self.reverse_lookup_dict: dict[T, Point2D] = {}
 
@@ -91,6 +123,11 @@ class Grid2D(Generic[T]):
         if not self.reverse_lookup:
             raise Exception("Tried to find value with reverse lookup disabled.")
         return self.reverse_lookup_dict.get(val)
+
+    @property
+    def occupied_cells(self) -> Iterable[tuple[Point2D, T]]:
+        """Get any cells that have been filled in."""
+        return self.data.items()
 
 
 class SizedGrid2D(Grid2D[T]):

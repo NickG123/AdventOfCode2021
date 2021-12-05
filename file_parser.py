@@ -6,7 +6,7 @@ import re
 from collections import Counter
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Iterator, Type, TypeVar
+from typing import Callable, Iterator, Sequence, Type, TypeVar
 
 T = TypeVar("T")
 
@@ -67,7 +67,11 @@ class Parser:
                 raise ValueError("Regex did not match")
             yield match
 
-    def read_regex_groups(self, regex: re.Pattern[str]) -> Iterator[dict[str, str]]:
+    def read_regex_groups(self, regex: re.Pattern[str]) -> Iterator[Sequence[str]]:
+        """Run a regex on each line and return the groups.  Regex must match each line."""
+        return (regex.groups() for regex in self.read_regex(regex))
+
+    def read_regex_groupdict(self, regex: re.Pattern[str]) -> Iterator[dict[str, str]]:
         """Run a regex on each line and return the groups.  Regex must match each line."""
         return (regex.groupdict() for regex in self.read_regex(regex))
 
