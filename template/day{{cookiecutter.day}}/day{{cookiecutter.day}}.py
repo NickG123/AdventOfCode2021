@@ -1,9 +1,10 @@
 """Day {{cookiecutter.day}}."""
 
-from file_parser import Parser
+import utils.parser as pc
 from result import Result
 
 
-def run(parser: Parser) -> Result:
+@pc.parse(pc.Lines)
+def run(lines: list[str]) -> Result:
     """Solution for Day {{cookiecutter.day}}."""
     return Result(None, None)
