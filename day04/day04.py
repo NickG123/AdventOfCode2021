@@ -49,7 +49,7 @@ def get_winning_card_and_call(
     raise Exception("No winning card found after moves completed.")
 
 
-CallsParser = pc.IgnoreNewline(pc.Repeat(pc.Int(), separator=pc.Literal(",")))
+CallsParser = pc.IgnoreNewline(pc.IntList)
 BoardLine = pc.Repeat(pc.Int(padding=" "), separator=pc.Literal(" "), min=1)
 Board = pc.Repeat(BoardLine, separator=pc.NewLine)
 Boards = pc.Repeat(Board, separator=pc.NewLine)

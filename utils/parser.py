@@ -1,4 +1,5 @@
 """A simple parser combinator utility."""
+import collections
 import string
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
@@ -212,6 +213,11 @@ def Suppress(parser: Parser[T]) -> Parser[None]:
     return FunctionParser(parser, lambda x: None)
 
 
+def Counter(parser: Parser[list[T]]) -> Parser[collections.Counter[T]]:
+    """Create a parser that counts occurrences in a list."""
+    return FunctionParser(parser, collections.Counter)
+
+
 NewLine = Char(allowed_chars="\n", illegal_chars="")
 Word = String(allowed_chars=string.ascii_letters)
 Line: Parser[str] = IgnoreNewline(String())
@@ -221,6 +227,7 @@ IntLines = Repeat(IntLine)
 Point2D: Parser[Point2DObj] = FunctionParser(
     Series(Int(), Literal(","), Int()), lambda x: Point2DObj(x[0], x[2])
 )
+IntList = Repeat(Int(), separator=Literal(","))
 
 
 def parse(
