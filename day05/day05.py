@@ -1,20 +1,17 @@
 """Day 05."""
-import re
-
-from file_parser import Parser
+import utils.parser as pc
 from result import Result
 from utils.geometry import Grid2D, Point2D
 
-LINE_REGEX = re.compile(r"(\d*),(\d*) -> (\d*),(\d*)")
 
-
-def run(parser: Parser) -> Result:
-    """Solution for Day 05."""
-    points = (
-        (Point2D(int(p1x), int(p1y)), Point2D(int(p2x), int(p2y)))
-        for p1x, p1y, p2x, p2y in parser.read_regex_groups(LINE_REGEX)
+@pc.parse(
+    pc.Repeat(
+        pc.Series(pc.Point2D, pc.Suppress(pc.Literal(" -> ")), pc.Point2D),
+        separator=pc.NewLine,
     )
-
+)
+def run(points: list[tuple[Point2D, Point2D]]) -> Result:
+    """Solution for Day 05."""
     p1_grid = Grid2D(default=int)
     p2_grid = Grid2D(default=int)
     for p1, p2 in points:

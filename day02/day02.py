@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from file_parser import Parser
+import utils.parser as pc
 from result import Result
 from utils.geometry import Point2D
 
@@ -29,16 +29,22 @@ class Movement:
         return self.direction.value * self.velocity
 
 
-def run(parser: Parser) -> Result:
+MovementParser = pc.DataClass(
+    Movement, pc.Series(pc.Enumeration(Direction), pc.Int(), separator=pc.Literal(" "))
+)
+
+
+@pc.parse(pc.Repeat(MovementParser, separator=pc.NewLine))
+def run(moves: list[Movement]) -> Result:
     """Solution for Day 02."""
     part1 = sum(
-        (m.distance for m in parser.read_dataclass(Movement)),
+        (m.distance for m in moves),
         Point2D(0, 0),
     )
 
     part2 = Point2D(0, 0)
     aim = Point2D(0, 0)
-    for movement in parser.read_dataclass(Movement):
+    for movement in moves:
         if movement.direction == Direction.forward:
             part2 += movement.distance
             part2 += aim * movement.velocity

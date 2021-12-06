@@ -2,7 +2,7 @@
 
 from typing import Iterable
 
-from file_parser import Parser
+import utils.parser as pc
 from result import Result
 from utils.geometry import SizedGrid2D
 
@@ -49,15 +49,18 @@ def get_winning_card_and_call(
     raise Exception("No winning card found after moves completed.")
 
 
-def run(parser: Parser) -> Result:
-    """Solution for Day 04."""
-    groups = parser.read_groups()
-    calls = [int(x) for x in next(groups)[0].split(",")]
+CallsParser = pc.IgnoreNewline(pc.Repeat(pc.Int(), separator=pc.Literal(",")))
+BoardLine = pc.Repeat(pc.Int(padding=" "), separator=pc.Literal(" "), min=1)
+Board = pc.Repeat(BoardLine, separator=pc.NewLine)
+Boards = pc.Repeat(Board, separator=pc.NewLine)
 
-    cards = {
-        Bingo([[int(cell) for cell in row.split(" ") if cell] for row in card])
-        for card in groups
-    }
+
+@pc.parse(pc.Pair(pc.IgnoreNewline(CallsParser), Boards))
+def run(input_data: tuple[list[int], list[list[list[int]]]]) -> Result:
+    """Solution for Day 04."""
+    calls, card_groups = input_data
+
+    cards = {Bingo(card) for card in card_groups}
 
     winning_card, winning_call = get_winning_card_and_call(cards, calls)
     cards.remove(winning_card)

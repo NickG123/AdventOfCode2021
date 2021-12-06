@@ -7,7 +7,6 @@ import click
 from cookiecutter.main import cookiecutter
 
 from driver_helpers.aoc_site import download_problem_input
-from file_parser import Parser
 
 YEAR = 2021
 CURR_DAY = datetime.now().day
@@ -40,8 +39,8 @@ def run(day: int, input_file_name: str) -> None:
             download_problem_input(fout, YEAR, day_str)
 
     module = importlib.import_module(f"day{day_str}.day{day_str}")
-    parser = Parser(input_file)
-    result = module.run(parser)
+    with open(input_file, "r", encoding="utf-8") as fin:
+        result = module.run(fin)
     print(result)
 
 

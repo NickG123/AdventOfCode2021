@@ -3,7 +3,7 @@
 from collections import Counter
 from itertools import takewhile
 
-from file_parser import Parser
+import utils.parser as pc
 from result import Result
 
 
@@ -22,12 +22,12 @@ def find_number(nums: list[str], most_common: bool, offset: int = 0) -> str:
     return find_number(sub_list, most_common, offset + 1)
 
 
-def run(parser: Parser) -> Result:
+@pc.parse(pc.Lines)
+def run(lines: list[str]) -> Result:
     """Solution for Day 03."""
-    it = parser.read_lines()
-    counts = [Counter([x]) for x in next(it)]
+    counts = [Counter([x]) for x in lines[0]]
 
-    for row in it:
+    for row in lines[1:]:
         for counter, char in zip(counts, row):
             counter[char] += 1
 
@@ -36,7 +36,7 @@ def run(parser: Parser) -> Result:
     epsilon = gamma ^ bit_mask
 
     # Part 2 feels like sorting would be smarter
-    sorted_nums = sorted(parser.read_lines())
+    sorted_nums = sorted(lines)
     oxygen = int(find_number(sorted_nums, True), 2)
     co2 = int(find_number(sorted_nums, False), 2)
 
