@@ -5,8 +5,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import (Any, Callable, Generic, Optional, TextIO, Type, TypeVar,
-                    cast)
+from typing import Any, Callable, Generic, Optional, TextIO, Type, TypeVar, cast
 
 from result import Result as ProblemResult
 
@@ -227,7 +226,7 @@ def Counter(parser: Parser[list[T]]) -> Parser[collections.Counter[T]]:
 
 def FrozenSet(parser: Parser[str] | Parser[list[str]]) -> Parser[frozenset[str]]:
     """Create a parser that builds a set from a string."""
-    return cast(Parser[set[str]], FunctionParser(parser, frozenset))
+    return cast(Parser[frozenset[str]], FunctionParser(parser, frozenset))
 
 
 NewLine = Char(allowed_chars="\n", illegal_chars="")
@@ -240,6 +239,8 @@ Point2D: Parser[Point2DObj] = FunctionParser(
     Series(Int(), Literal(","), Int()), lambda x: Point2DObj(x[0], x[2])
 )
 IntList = Repeat(Int(), separator=Literal(","))
+Digit = FunctionParser(Char(), int)
+DigitList = Repeat(Digit, min=1)
 
 
 def parse(

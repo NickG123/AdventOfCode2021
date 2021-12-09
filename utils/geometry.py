@@ -94,6 +94,7 @@ class Rect2D:
         )
 
 
+ALL_DIRECTIONS = [Point2D(-1, 0), Point2D(1, 0), Point2D(0, -1), Point2D(0, 1)]
 T = TypeVar("T")
 
 
@@ -123,6 +124,14 @@ class Grid2D(Generic[T]):
         if not self.reverse_lookup:
             raise Exception("Tried to find value with reverse lookup disabled.")
         return self.reverse_lookup_dict.get(val)
+
+    def neighbours(self, key: Point2D) -> Iterable[tuple[Point2D, T]]:
+        """Return the neighbours of a given point, if defined."""
+        return (
+            (key + offset, self.data[key + offset])
+            for offset in ALL_DIRECTIONS
+            if key + offset in self.data
+        )
 
     @property
     def occupied_cells(self) -> Iterable[tuple[Point2D, T]]:
@@ -189,6 +198,13 @@ class SizedGrid2D(Grid2D[T]):
         for row in self.rows:
             for cell in row:
                 yield cell
+
+    def items(self) -> Iterable[tuple[Point2D, T]]:
+        """Get the points and cells of the grid."""
+        for row_num in self.rect.row_nums:
+            for col_num in self.rect.col_nums:
+                point = Point2D(col_num, row_num)
+                yield point, self.data[point]
 
     def __str__(self) -> str:
         """Simple string representation of the grid."""
