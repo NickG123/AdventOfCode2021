@@ -5,7 +5,8 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Generic, Optional, TextIO, Type, TypeVar
+from typing import (Any, Callable, Generic, Optional, TextIO, Type, TypeVar,
+                    cast)
 
 from result import Result as ProblemResult
 
@@ -96,10 +97,11 @@ class Repeat(Parser[list[T]]):
         results: list[T] = []
         while True:
             try:
+                sep_offset = offset
                 if self.separator_parser is not None and results:
                     sep_result = self.separator_parser._parse(data, offset)
-                    offset = sep_result.new_offset
-                result = self.base_parser._parse(data, offset)
+                    sep_offset = sep_result.new_offset
+                result = self.base_parser._parse(data, sep_offset)
                 offset = result.new_offset
                 if result.result is not None:
                     results.append(result.result)
@@ -167,10 +169,15 @@ class Series(Parser[list[T]]):
 
 
 def String(
-    allowed_chars: Optional[str] = None, illegal_chars: str = "\n"
+    allowed_chars: Optional[str] = None,
+    illegal_chars: str = "\n",
+    min: Optional[int] = None,
+    max: Optional[int] = None,
 ) -> Parser[str]:
     """Create a parser to parse a string."""
-    return FunctionParser(Repeat(Char(allowed_chars, illegal_chars)), "".join)
+    return FunctionParser(
+        Repeat(Char(allowed_chars, illegal_chars), min=min, max=max), "".join
+    )
 
 
 def Int(base: int = 10, padding: str = "") -> Parser[int]:
@@ -218,8 +225,13 @@ def Counter(parser: Parser[list[T]]) -> Parser[collections.Counter[T]]:
     return FunctionParser(parser, collections.Counter)
 
 
+def FrozenSet(parser: Parser[str] | Parser[list[str]]) -> Parser[frozenset[str]]:
+    """Create a parser that builds a set from a string."""
+    return cast(Parser[set[str]], FunctionParser(parser, frozenset))
+
+
 NewLine = Char(allowed_chars="\n", illegal_chars="")
-Word = String(allowed_chars=string.ascii_letters)
+Word = String(allowed_chars=string.ascii_letters, min=1)
 Line: Parser[str] = IgnoreNewline(String())
 Lines = Repeat(Line)
 IntLine = FunctionParser(Line, int)
