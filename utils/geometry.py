@@ -94,7 +94,13 @@ class Rect2D:
         )
 
 
-ALL_DIRECTIONS = [Point2D(-1, 0), Point2D(1, 0), Point2D(0, -1), Point2D(0, 1)]
+CARDINAL_DIRECTIONS = [Point2D(-1, 0), Point2D(1, 0), Point2D(0, -1), Point2D(0, 1)]
+ALL_DIRECTIONS = CARDINAL_DIRECTIONS + [
+    Point2D(-1, -1),
+    Point2D(1, 1),
+    Point2D(1, -1),
+    Point2D(-1, 1),
+]
 T = TypeVar("T")
 
 
@@ -125,11 +131,14 @@ class Grid2D(Generic[T]):
             raise Exception("Tried to find value with reverse lookup disabled.")
         return self.reverse_lookup_dict.get(val)
 
-    def neighbours(self, key: Point2D) -> Iterable[tuple[Point2D, T]]:
+    def neighbours(
+        self, key: Point2D, diagonal: bool = False
+    ) -> Iterable[tuple[Point2D, T]]:
         """Return the neighbours of a given point, if defined."""
+        directions = ALL_DIRECTIONS if diagonal else CARDINAL_DIRECTIONS
         return (
             (key + offset, self.data[key + offset])
-            for offset in ALL_DIRECTIONS
+            for offset in directions
             if key + offset in self.data
         )
 
