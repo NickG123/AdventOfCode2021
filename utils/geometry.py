@@ -125,6 +125,10 @@ class Grid2D(Generic[T]):
         """Get a value at a posiition on the grid."""
         return self.data[key]
 
+    def __delitem__(self, key: Point2D) -> None:
+        """Delete a value at a position on the grid."""
+        del self.data[key]
+
     def find(self, val: T) -> Optional[Point2D]:
         """Reverse lookup the position of a value."""
         if not self.reverse_lookup:
@@ -142,10 +146,32 @@ class Grid2D(Generic[T]):
             if key + offset in self.data
         )
 
+    def bounding_box(self) -> Rect2D:
+        """Get the rectangle containing all points in the dataset"""
+        min_x = min(p.x for p in self.data)
+        max_x = max(p.x for p in self.data)
+        min_y = min(p.y for p in self.data)
+        max_y = max(p.y for p in self.data)
+        return Rect2D(Point2D(min_x, min_y), Point2D(max_x + 1, max_y + 1))
+
     @property
     def occupied_cells(self) -> Iterable[tuple[Point2D, T]]:
         """Get any cells that have been filled in."""
         return self.data.items()
+
+    def as_string(self, *, value_transformer: Callable[[T], str], default: str) -> str:
+        """Convert the grid to a string."""
+        bb = self.bounding_box()
+        result_fragments = []
+        for row_num in bb.row_nums:
+            for col_num in bb.col_nums:
+                p = Point2D(col_num, row_num)
+                if p in self.data:
+                    result_fragments.append(value_transformer(self.data[p]))
+                else:
+                    result_fragments.append(default)
+            result_fragments.append("\n")
+        return "".join(result_fragments)
 
 
 class SizedGrid2D(Grid2D[T]):
