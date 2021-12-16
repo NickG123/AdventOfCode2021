@@ -132,14 +132,24 @@ class FunctionParser(Generic[S, T], Parser[T]):
 class Pair(Parser[tuple[S, T]]):
     """Run a pair of parsers one after another (stronger typed than series)."""
 
-    def __init__(self, parser1: Parser[S], parser2: Parser[T]) -> None:
+    def __init__(
+        self,
+        parser1: Parser[S],
+        parser2: Parser[T],
+        separator: Optional[Parser[Any]] = None,
+    ) -> None:
         """Construct a new pair parser."""
         self.parser1 = parser1
         self.parser2 = parser2
+        self.separator_parser = separator
 
     def _parse_impl(self, data: str, offset: int) -> ParseResult[tuple[S, T]]:
         result1 = self.parser1._parse(data, offset)
-        result2 = self.parser2._parse(data, result1.new_offset)
+        new_offset = result1.new_offset
+        if self.separator_parser is not None:
+            sep_result = self.separator_parser._parse(data, new_offset)
+            new_offset = sep_result.new_offset
+        result2 = self.parser2._parse(data, new_offset)
 
         return ParseResult((result1.result, result2.result), result2.new_offset)
 
@@ -214,6 +224,11 @@ def IgnoreNewline(parser: Parser[T]) -> Parser[T]:
     return FunctionParser(Pair(parser, NewLine), lambda x: x[0])
 
 
+def IgnoreNewlines(parser: Parser[T]) -> Parser[T]:
+    """Create a parser that ignores a newline at the end of the parser."""
+    return FunctionParser(Pair(parser, Repeat(NewLine)), lambda x: x[0])
+
+
 def Suppress(parser: Parser[T]) -> Parser[None]:
     """Create a parser that suppresses the output of another parser."""
     return FunctionParser(parser, lambda x: None)
@@ -227,6 +242,11 @@ def Counter(parser: Parser[list[T]]) -> Parser[collections.Counter[T]]:
 def FrozenSet(parser: Parser[str] | Parser[list[str]]) -> Parser[frozenset[str]]:
     """Create a parser that builds a set from a string."""
     return cast(Parser[frozenset[str]], FunctionParser(parser, frozenset))
+
+
+def Dictionary(parser: Parser[list[tuple[T, S]]]) -> Parser[dict[T, S]]:
+    """Create a parser that build a dictionary from a list of tuples."""
+    return FunctionParser(parser, dict)
 
 
 NewLine = Char(allowed_chars="\n", illegal_chars="")
