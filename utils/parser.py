@@ -249,6 +249,11 @@ def Dictionary(parser: Parser[list[tuple[T, S]]]) -> Parser[dict[T, S]]:
     return FunctionParser(parser, dict)
 
 
+def HexString(parser: Parser[str]) -> Parser[bytes]:
+    """Create a parser that parses a hex string to bytes."""
+    return FunctionParser(parser, bytes.fromhex)
+
+
 NewLine = Char(allowed_chars="\n", illegal_chars="")
 Word = String(allowed_chars=string.ascii_letters, min=1)
 Line: Parser[str] = IgnoreNewline(String())
