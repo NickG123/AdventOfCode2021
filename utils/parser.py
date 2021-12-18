@@ -1,5 +1,6 @@
 """A simple parser combinator utility."""
 import collections
+import operator
 import string
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
@@ -194,7 +195,7 @@ def Int(base: int = 10, padding: str = "") -> Parser[int]:
     return FunctionParser(
         Pair(
             String(allowed_chars=padding),
-            String(allowed_chars=string.digits),
+            String(allowed_chars=string.digits + "-"),
         ),
         lambda x: int(x[1].lstrip(padding), base),
     )
@@ -252,6 +253,11 @@ def Dictionary(parser: Parser[list[tuple[T, S]]]) -> Parser[dict[T, S]]:
 def HexString(parser: Parser[str]) -> Parser[bytes]:
     """Create a parser that parses a hex string to bytes."""
     return FunctionParser(parser, bytes.fromhex)
+
+
+def IgnorePrefix(parser: Parser[tuple[T, S]]) -> Parser[S]:
+    """Create a parser that ignores a prefix."""
+    return FunctionParser(parser, operator.itemgetter(1))
 
 
 NewLine = Char(allowed_chars="\n", illegal_chars="")
