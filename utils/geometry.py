@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Callable, Generic, Iterable, Optional, TypeVar
+from typing import Callable, Generic, Iterable, Optional, Sequence, TypeVar
 
 
 def get_basis_vector(x: int) -> int:
@@ -129,6 +129,10 @@ class Grid2D(Generic[T]):
         """Delete a value at a position on the grid."""
         del self.data[key]
 
+    def get(self, key: Point2D, default: T) -> T:
+        """Get a value or return a default.  I should really just inherit from MutableMapping..."""
+        return self.data.get(key, default)
+
     def find(self, val: T) -> Optional[Point2D]:
         """Reverse lookup the position of a value."""
         if not self.reverse_lookup:
@@ -195,7 +199,9 @@ class SizedGrid2D(Grid2D[T]):
         return super().__getitem__(key)
 
     @staticmethod
-    def from_data(data: list[list[T]], reverse_lookup: bool = False) -> SizedGrid2D[T]:
+    def from_data(
+        data: Sequence[Sequence[T]], reverse_lookup: bool = False
+    ) -> SizedGrid2D[T]:
         """Construct a sized grid from a 2d array."""
         height = len(data)
         width = len(data[0])
