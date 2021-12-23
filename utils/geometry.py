@@ -117,7 +117,7 @@ class Grid2D(Generic[T]):
 
     def __setitem__(self, key: Point2D, val: T) -> None:
         """Set a position in the grid."""
-        if self.reverse_lookup is not None:
+        if self.reverse_lookup:
             self.reverse_lookup_dict[val] = key
         self.data[key] = val
 
