@@ -247,6 +247,12 @@ class SizedGrid2D(Grid2D[T]):
                 point = Point2D(col_num, row_num)
                 yield point, self.data[point]
 
+    def get_pos_wrap(self, p: Point2D) -> Point2D:
+        """Get a position from the grid, wrapping around if out of bounds."""
+        x = ((p.x - self.rect.top_left.x) % self.rect.width) + self.rect.top_left.x
+        y = ((p.y - self.rect.top_left.y) % self.rect.height) + self.rect.top_left.y
+        return Point2D(x, y)
+
     def __str__(self) -> str:
         """Simple string representation of the grid."""
         return "\n".join(" ".join(str(s) for s in row) for row in self.rows)
